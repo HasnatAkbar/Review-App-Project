@@ -39,7 +39,10 @@ export default function HomeScreen({ navigation }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchAirlineData = async () => {
+    setIsLoading(true);
+
     try {
+
       const querySnapshot = await getDocs(collection(db, "airlines"));
       const airlineData = querySnapshot.docs.map((doc) => doc.data());
       setData(airlineData);
@@ -48,22 +51,14 @@ export default function HomeScreen({ navigation }) {
 
       console.error("Error fetching airline data:", error);
     }
+    setIsLoading(false);
   };
-
+  const handleButtonPress = () => {
+    navigation.navigate("Login");
+  };
   useEffect(() => {
-    setIsLoading(true);
 
     fetchAirlineData();
-    AsyncStorage.getItem("userId")
-    .then((value) => {
-      if (value) {
-        console.log(value);
-      }
-    })
-    .catch((error) => {
-      console.error("Error retrieving user ID:", error);
-    });
-    setIsLoading(false);
 
   }, []);
 
@@ -71,7 +66,7 @@ export default function HomeScreen({ navigation }) {
     return (
         <TouchableOpacity
         activeOpacity={1}
-        onPress={() => navigation.navigate("DetailsScreen", airline)}
+        onPress={() => navigation.navigate("Classes", {"name":airline.name,"classes":airline.classes})}
         style={{marginBottom:20,marginTop:20,marginLeft:20,marginRight:20,height:300}}
       >
        
