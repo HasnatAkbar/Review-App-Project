@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator  } from "react-native";
 import InputText from "../components/Input";
 import { Link, useNavigation } from "@react-navigation/native";
 import COLORS from "../../consts/colors";
@@ -32,6 +32,8 @@ export default function Login() {
         const userId = userCredential.user.uid;
         AsyncStorage.setItem("userId", userId);
         console.log("User ID:", userId);
+        setEmail("");
+        setPassword("");
         setIsLoading(false);
         navigation.navigate("Home");
       })
