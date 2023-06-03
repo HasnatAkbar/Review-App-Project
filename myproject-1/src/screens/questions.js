@@ -12,7 +12,8 @@ import {
     Image,
     Animated,
     ActivityIndicator,
-    Alert
+    Alert,
+    Switch
   } from "react-native";
 import { RadioButton  } from 'react-native-paper';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -37,24 +38,56 @@ export default function ClassQuestions({ navigation }) {
   const [userId, setUserId] = useState("");
   const [response, setResponse] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  
+  // Get parameters passed to the route
   const route = useRoute();
   const { name, classname, questions } = route.params || {};
   const questions_count = questions.length;
-  useEffect(() => {
-
-    AsyncStorage.getItem("userId")
+  // Theme switch handlers
+const [theme, setTheme] = useState("");
+const handleTheme = () =>{
+  if(theme=="Light"){
+    setTheme("Dark");
+    AsyncStorage.setItem("theme", "Dark");
+  }else{
+    setTheme("Light");
+    AsyncStorage.setItem("theme", "Light");
+  }
+}
+// Update theme from AsyncStorage
+const updatetheme = () => {
+  AsyncStorage.getItem("theme")
     .then((value) => {
       if (value) {
-        console.log(value);
-        setUserId(value);
+        setTheme(value);
       }
     })
     .catch((error) => {
-      console.error("Error retrieving user ID:", error);
+      AsyncStorage.setItem("theme", "Light");
     });
+};
+// Fetch userId from AsyncStorage and update theme on navigation focus and mount
+  
+useEffect(() => {
+  AsyncStorage.getItem("userId")
+  .then((value) => {
+    if (value) {
+      console.log(value);
+      setUserId(value);
+    }
+  })
+  .catch((error) => {
+    console.error("Error retrieving user ID:", error);
+  });
+  updatetheme();
+  const unsubscribe = navigation.addListener('focus', () => {
+    updatetheme();
+  });
 
-  }, []);
+  return () => {
+    unsubscribe();
+  };
+}, [navigation]);
+// Handle change in selected option
   const handleOptionChange = (question, option) => {
     setResponse(prevResponse => {
         return {
@@ -66,7 +99,7 @@ export default function ClassQuestions({ navigation }) {
     console.log(Object.keys(response).length +"/"+ questions_count);
 
   };
-  
+    // Handle submission of responses
   const handleSubmit = async () => {
     setIsLoading(true);
     try{
@@ -109,9 +142,13 @@ export default function ClassQuestions({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme!="Light"?"#000":"#fff" }}>
+       <View style={{marginTop:7}}>
+      <Switch trackColor={{false:"#fff",true:"#000"}} thumbColor={theme=="Light"?"#000":"#fff"} value={theme=="Light"} onValueChange={handleTheme}/>
+      
+      </View>
       <View style={style.header}>
-        <Text style={{ fontSize: 20, textAlign:"center" }}>{classname} of {name}</Text>
+        <Text style={{ fontSize: 25, textAlign:"center",color:theme!="Light"?"#fff":"#000" }}>{classname} of {name}</Text>
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>
       {questions &&
@@ -123,7 +160,7 @@ export default function ClassQuestions({ navigation }) {
               marginLeft: 20,
               marginRight: 20,
               height: 250,
-              backgroundColor: "rgba(0, 0, 0, 0.07)",
+              backgroundColor:theme!="Light"?"#fff":"rgba(0, 0, 0, 0.07)",
               borderRadius: 10,
               padding: 10,
             }}
@@ -166,6 +203,7 @@ const style = StyleSheet.create({
     marginVertical: 10,
     borderRadius: 15,
     marginBottom: 20,
+    marginHorizontal:30
   },
   card: {
     height: 280,

@@ -11,7 +11,9 @@ import {
   View,
   Image,
   Animated,
-  ActivityIndicator
+  ActivityIndicator,
+  Switch,
+  Button
 } from "react-native";
 import { initializeApp } from "firebase/app";
 import { collection, getFirestore, getDocs } from "firebase/firestore/lite"; // Update import
@@ -37,7 +39,41 @@ const db = getFirestore(app);
 export default function HomeScreen({ navigation }) {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  // Theme switch handlers
+const [theme, setTheme] = useState("");
+const handleTheme = () =>{
+  if(theme=="Light"){
+    setTheme("Dark");
+    AsyncStorage.setItem("theme", "Dark");
+  }else{
+    setTheme("Light");
+    AsyncStorage.setItem("theme", "Light");
+  }
+}
+  // Update theme from AsyncStorage
+const updatetheme = () => {
+  AsyncStorage.getItem("theme")
+    .then((value) => {
+      if (value) {
+        setTheme(value);
+      }
+    })
+    .catch((error) => {
+      AsyncStorage.setItem("theme", "Light");
+    });
+};
+  // Update theme on navigation focus and mount
+useEffect(() => {
+  updatetheme();
+  const unsubscribe = navigation.addListener('focus', () => {
+    updatetheme();
+  });
 
+  return () => {
+    unsubscribe();
+  };
+}, [navigation]);
+  // Fetch airline data from Firestore
   const fetchAirlineData = async () => {
     setIsLoading(true);
 
@@ -56,18 +92,20 @@ export default function HomeScreen({ navigation }) {
   const handleButtonPress = () => {
     navigation.navigate("Login");
   };
+  // Fetch airline data on component mount
   useEffect(() => {
 
     fetchAirlineData();
+   
 
   }, []);
-
+// Airline card component
   const TopAirlineCard = ({ airline }) => {
     return (
         <TouchableOpacity
         activeOpacity={1}
         onPress={() => navigation.navigate("Classes", {"name":airline.name,"classes":airline.classes})}
-        style={{marginBottom:20,marginTop:20,marginLeft:20,marginRight:20,height:300}}
+        style={{marginBottom:20,marginTop:20,marginLeft:20,marginRight:20,height:300,backgroundColor:"#fff",borderRadius:15}}
       >
        
           <View style={style.priceTag}>
@@ -121,9 +159,19 @@ export default function HomeScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.light }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme!="Light"?"#000":"#fff" }}>
+      <View style={{marginTop:7}}>
+      <Switch trackColor={{false:"#fff",true:"#000"}} thumbColor={theme=="Light"?"#000":"#fff"} value={theme=="Light"} onValueChange={handleTheme}/>
+      
+      </View>
       <View style={style.header}>
-       <Text style={{fontSize:30}}>List of All Airline </Text>
+      
+       <Text style={{fontSize:30,color: theme!="Light"?"#fff":"#000"}}>List of All Airline </Text>
+       <TouchableOpacity onPress={() => navigation.navigate("Login")} style={{backgroundColor:COLORS.primary,paddingHorizontal:15,height:30,paddingVertical:5,marginTop:7,borderRadius:5}}>
+          <Text style={{color:"#fff"}}>Logout</Text>
+        </TouchableOpacity>
+     
+     
       </View>
       {isLoading? <ActivityIndicator size="large" color="blue" /> : 
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -138,7 +186,7 @@ export default function HomeScreen({ navigation }) {
 
 const style = StyleSheet.create({
   header: {
-    marginTop: 20,
+    marginTop: 2,
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 20,
