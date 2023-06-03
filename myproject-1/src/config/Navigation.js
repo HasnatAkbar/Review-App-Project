@@ -17,33 +17,28 @@ export default function Navigation() {
       
         <Stack.Screen
           name="Login"
-          options={{ title: "Login" }}
+          options={{headerShown: false }}
           component={Login}
         />
         <Stack.Screen
           name="Signup"
-          options={{ title: "Signup" }}
+          options={{headerShown: false }}
           component={Signup}
         />
         
         <Stack.Screen
           name="Home"
-          options={({ navigation }) => ({
-            title: "Home",
-            headerRight: () => (
-              <Button title="Logout" onPress={() => navigation.navigate("Login")} />
-            ),
-          })}
+          options={{headerShown: false }}
           component={HomeScreen}
         />
         <Stack.Screen
           name="Classes"
-          options={{ title: "" }}
+          options={{headerShown: false }}
           component={Classes}
         />
         <Stack.Screen
           name="Questions"
-          options={{ title: "" }}
+          options={{headerShown: false }}
           component={ClassQuestions }
         />
       </Stack.Navigator>
